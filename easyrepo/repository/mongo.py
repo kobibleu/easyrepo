@@ -81,15 +81,15 @@ class MongoRepository(PagingRepository[dict, ObjectId]):
         """
         return self.collection.find_one({"_id": id})
 
-    def save(self, document: dict) -> dict:
+    def save(self, model: dict) -> dict:
         """
         Saves a given document.
         """
-        if "_id" not in document:
-            id = self.collection.insert_one(document).inserted_id
+        if "_id" not in model:
+            id = self.collection.insert_one(model).inserted_id
         else:
-            id = document["_id"]
-            self.collection.replace_one({"_id":id}, document)
+            id = model["_id"]
+            self.collection.replace_one({"_id":id}, model)
         return self.find_by_id(id)
 
     def save_all(self, models: Iterable[dict]) -> Iterable[dict]:

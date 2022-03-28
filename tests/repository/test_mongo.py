@@ -7,12 +7,14 @@ from easyrepo.repository.mongo import MongoRepository
 
 @pytest.fixture
 def collection():
-    return MongoClient().db.collection
+    collection = MongoClient().db.collection
+    yield collection
 
 
 @pytest.fixture
 def repo(collection):
-    return MongoRepository(collection)
+    repo = MongoRepository(collection)
+    yield repo
 
 
 def test_count(collection, repo):

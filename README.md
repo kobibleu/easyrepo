@@ -26,6 +26,14 @@ repository provided.
 
 ### Repositories
 
+- `MemoryRepository`: simplest usage of repository implementing `PagingRepository`, suited for rapid bootstrapping and prototyping.
+
+  ```python
+  from easyrepo import MemoryRepository
+  
+  test_repo = MemoryRepository()
+  ```
+  
 - `MongoRepository`: mongo specific repository implementing `PagingRepository`.
 
   ```python
@@ -38,4 +46,5 @@ repository provided.
   
   test_repo = MongoRepository(collection=collection)
   ```
+
 
