@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+
+## 0.2.1
+
+### Added
+
+- Add possibility to use pydantic model for `MemoryRepository` typing.
+
 ## 0.2.0
 
 ### Added
@@ -11,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Add `CRUDRepository` interface
+- Add `CRUDRepository` interface.
+- Add `PagingRepository` interface extending `CRUDRepository`.
 - Add `Paging` and `Sorting` model.
 - Add `MongoRepository` implementing `CRUDRepository` interface.

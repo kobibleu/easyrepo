@@ -1,17 +1,24 @@
-from typing import Iterable, Optional
+from typing import Iterable, Optional, TypeVar, Generic, get_args
+
+from pydantic import BaseModel
 
 from easyrepo import PagingRepository
 from easyrepo.model.paging import PageRequest, Page
 from easyrepo.model.sorting import Sort
 
+T = TypeVar("T")
 
-class MemoryRepository(PagingRepository[dict, int]):
+
+class MemoryRepository(Generic[T], PagingRepository[T, int]):
     """
     Memory repository.
     """
 
     def __init__(self):
         self._data = {}
+        model_type = get_args(self.__orig_bases__[0])[0]
+        if not issubclass(model_type, (BaseModel, dict)):
+            raise ValueError(f"Model type {model_type} is not a pydantic model or dict")
 
     def count(self) -> int:
         """
@@ -44,46 +51,61 @@ class MemoryRepository(PagingRepository[dict, int]):
         """
         return self._data.get(id, None) is not None
 
-    def find_all(self, sort: Sort = None) -> Iterable[dict]:
+    def find_all(self, sort: Sort = None) -> Iterable[T]:
         """
         Returns all entities sorted by the given options.
         """
         return list(self._data.values())
 
-    def find_page(self, page_request: PageRequest, sort: Sort = None) -> Page[dict]:
+    def find_page(self, page_request: PageRequest, sort: Sort = None) -> Page[T]:
         """
         Returns a Page of entities meeting the paging restriction.
         """
         result = self.find_all(sort)[page_request.offset():page_request.offset() + page_request.size]
         return Page(content=result, page_request=page_request, total_elements=self.count())
 
-    def find_all_by_id(self, ids: Iterable[int]) -> Iterable[dict]:
+    def find_all_by_id(self, ids: Iterable[int]) -> Iterable[T]:
         """
-        Returns all documents with the given IDs.
+        Returns all entities with the given IDs.
         """
         return {k: self._data[k] for k in ids}
 
-    def find_by_id(self, id: int) -> Optional[dict]:
+    def find_by_id(self, id: int) -> Optional[T]:
         """
-        Returns a document by its id.
+        Returns an entity by its id.
         """
         return self._data.get(id)
 
-    def save(self, entity: dict) -> dict:
+    def save(self, model: T) -> T:
         """
-        Saves a given document.
+        Saves a given entity.
         """
-        if "id" in entity:
-            self._data[entity["id"]] = entity
-            return entity
-
         next_id = len(self._data) + 1
-        entity["id"] = next_id
-        self._data[next_id] = entity
-        return entity
+        if isinstance(model, dict):
+            return self._save_dict_model(model, next_id)
+        elif isinstance(model, BaseModel):
+            return self._save_pydantic_model(model, next_id)
+        else:
+            raise ValueError(f"type {type(model)} not handled.")
 
-    def save_all(self, models: Iterable[dict]) -> Iterable[dict]:
+    def save_all(self, models: Iterable[T]) -> Iterable[T]:
         """
-        Saves all given documents.
+        Saves all given entities.
         """
-        return [self.save(model) for model in models]
+        return [self.save(entity) for entity in models]
+
+    def _save_dict_model(self, model: dict, next_id: int):
+        if "id" in model:
+            self._data[model["id"]] = model
+            return model
+        model["id"] = next_id
+        self._data[next_id] = model
+        return model
+
+    def _save_pydantic_model(self, model: BaseModel, next_id: int):
+        if hasattr(model, "id") and model.id is not None:
+            self._data[model.id] = model
+            return model
+        model.id = next_id
+        self._data[next_id] = model
+        return model

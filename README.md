@@ -31,7 +31,12 @@ repository provided.
   ```python
   from easyrepo import MemoryRepository
   
-  test_repo = MemoryRepository()
+  
+  class MyRepo(MemoryRepository[dict]):
+    pass
+  
+  
+  test_repo = MyRepo()
   ```
   
 - `MongoRepository`: mongo specific repository implementing `PagingRepository`.
@@ -39,6 +44,7 @@ repository provided.
   ```python
   from easyrepo import MongoRepository
   from pymongo import MongoClient
+  
   
   client = MongoClient()
   db = client.test_database
