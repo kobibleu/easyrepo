@@ -9,7 +9,7 @@ from easyrepo.model.sorting import Sort
 T = TypeVar("T")
 
 
-class MemoryRepository(Generic[T], PagingRepository[T, int]):
+class MemoryRepository(Generic[T], PagingRepository):
     """
     Memory repository.
     """
@@ -86,7 +86,7 @@ class MemoryRepository(Generic[T], PagingRepository[T, int]):
         elif isinstance(model, BaseModel):
             return self._save_pydantic_model(model, next_id)
         else:
-            raise ValueError(f"type {type(model)} not handled.")
+            raise ValueError(f"type {type(model)} not handled by repository.")
 
     def save_all(self, models: Iterable[T]) -> Iterable[T]:
         """
@@ -95,6 +95,9 @@ class MemoryRepository(Generic[T], PagingRepository[T, int]):
         return [self.save(entity) for entity in models]
 
     def _save_dict_model(self, model: dict, next_id: int):
+        """
+        Save a dict type model.
+        """
         if "id" in model:
             self._data[model["id"]] = model
             return model
@@ -103,6 +106,9 @@ class MemoryRepository(Generic[T], PagingRepository[T, int]):
         return model
 
     def _save_pydantic_model(self, model: BaseModel, next_id: int):
+        """
+        Save a pydantic.BaseModel subclass type model.
+        """
         if hasattr(model, "id") and model.id is not None:
             self._data[model.id] = model
             return model

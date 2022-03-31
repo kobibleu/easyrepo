@@ -1,19 +1,15 @@
 import abc
-from typing import Optional, Iterable, TypeVar, Generic
 
 from easyrepo.model.sorting import Sort
 
-T = TypeVar("T")
-ID = TypeVar("ID")
 
-
-class CRUDRepository(Generic[T, ID], abc.ABC):
+class CRUDRepository(abc.ABC):
     """
     Interface for generic CRUD operations for a specific type.
     """
 
     @abc.abstractmethod
-    def count(self) -> int:
+    def count(self):
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -21,33 +17,33 @@ class CRUDRepository(Generic[T, ID], abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def delete_all_by_id(self, ids: Iterable[ID]):
+    def delete_all_by_id(self, ids):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def delete_by_id(self, id: ID):
+    def delete_by_id(self, id):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def exists_by_id(self, id: ID) -> bool:
+    def exists_by_id(self, id):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def find_all(self, sort: Sort = None) -> Iterable[T]:
+    def find_all(self, sort: Sort = None):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def find_all_by_id(self, ids: Iterable[ID]) -> Iterable[T]:
+    def find_all_by_id(self, ids):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def find_by_id(self, id: ID) -> Optional[T]:
+    def find_by_id(self, id):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def save(self, model: T) -> T:
+    def save(self, model):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def save_all(self, models: Iterable[T]) -> Iterable[T]:
+    def save_all(self, models):
         raise NotImplementedError()

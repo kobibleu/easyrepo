@@ -46,11 +46,15 @@ repository provided.
   from pymongo import MongoClient
   
   
+  class MyRepo(MongoRepository[dict]):
+    pass
+  
+  
   client = MongoClient()
   db = client.test_database
   collection = db.test_collection
   
-  test_repo = MongoRepository(collection=collection)
+  test_repo = MyRepo(collection=collection)
   ```
 
 

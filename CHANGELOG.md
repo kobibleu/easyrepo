@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.2.2
+
+### Added
+
+- Add possibility to use pydantic model for `MongoRepository` typing.
 
 ## 0.2.1
 
