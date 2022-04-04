@@ -74,5 +74,29 @@ repository provided.
   
   test_repo = MyRepo()
   ```
+  
+- `SqlRepository`: dedicated repository for SQLAlchemy ORM implementing `PagingRepository`.
+
+  ```python
+  from easyrepo.repository.sql import SqlRepository
+  from easyrepo.model.sql import SqlModel
+  from sqlalchemy import create_engine, Column, Integer, String
+  from sqlalchemy.orm import sessionmaker
+  
+  
+  class TestModel(SqlModel):
+    id = Column(Integer, primary_key=True, index=True)
+    value: str = Column(String, nullable=False)
+  
+  
+  class MyRepo(SqlRepository[TestModel]):
+    pass
+  
+  
+  engine = create_engine(SQLALCHEMY_DATABASE_URI)
+  SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+  session = SessionLocal()
+  test_repo = MyRepo(session)
+  ```
 
 

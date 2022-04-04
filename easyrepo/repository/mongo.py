@@ -20,10 +20,12 @@ class MongoRepository(Generic[T], PagingRepository):
 
     def __init__(self, collection: pymongo.collection.Collection):
         self._collection = collection
-        self._model_type = get_args(self.__orig_bases__[0])[0]
-        if not issubclass(self._model_type, (MongoModel, dict)):
-            raise ValueError(f"Model type {self._model_type} is not dict or `easyrepo.model.mongo.MongoModel`")
-        self._is_pydantic_model = issubclass(self._model_type, MongoModel)
+        self._model = get_args(self.__orig_bases__[0])[0]
+        if type(self._model) == TypeVar:
+            raise ValueError("Missing repository type")
+        if not issubclass(self._model, (MongoModel, dict)):
+            raise ValueError(f"Model type {self._model} is not dict or `easyrepo.model.mongo.MongoModel`")
+        self._is_pydantic_model = issubclass(self._model, MongoModel)
 
     def count(self) -> int:
         """
@@ -149,4 +151,4 @@ class MongoRepository(Generic[T], PagingRepository):
         """
         if not self._is_pydantic_model:
             return result
-        return self._model_type(id=result.pop("_id"), **result)
+        return self._model(id=result.pop("_id"), **result)

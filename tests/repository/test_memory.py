@@ -20,10 +20,6 @@ class ModelRepo(MemoryRepository[TestModel]):
     pass
 
 
-class IntRepo(MemoryRepository[int]):
-    pass
-
-
 @pytest.fixture
 def dict_repo():
     repo = DictRepo()
@@ -39,11 +35,6 @@ def dict_repo():
 def model_repo():
     repo = ModelRepo()
     yield repo
-
-
-def test_create_repo_with_unexpected_model_type():
-    with pytest.raises(ValueError):
-        IntRepo()
 
 
 def test_count(dict_repo):

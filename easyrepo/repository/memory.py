@@ -18,9 +18,11 @@ class MemoryRepository(Generic[T], PagingRepository):
 
     def __init__(self):
         self._data = {}
-        model_type = get_args(self.__orig_bases__[0])[0]
-        if not issubclass(model_type, (BaseModel, dict)):
-            raise ValueError(f"Model type {model_type} is not dict or `pydantic.BaseModel`")
+        model = get_args(self.__orig_bases__[0])[0]
+        if type(model) == TypeVar:
+            raise ValueError("Missing repository type")
+        if not issubclass(model, (BaseModel, dict)):
+            raise ValueError(f"Model type {model} is not dict or `pydantic.BaseModel`")
 
     def count(self) -> int:
         """

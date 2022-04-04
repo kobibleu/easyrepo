@@ -31,7 +31,7 @@ def repo(connection):
     yield repo
 
 
-def test_create_repo_with_unexpected_model_type(repo):
+def test_create_repo_with_unexpected_model_type():
     with pytest.raises(ValueError):
         IntRepo()
 

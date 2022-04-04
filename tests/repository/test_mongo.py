@@ -18,10 +18,6 @@ class ModelRepo(MongoRepository[TestModel]):
     pass
 
 
-class IntRepo(MongoRepository[int]):
-    pass
-
-
 @pytest.fixture
 def collection():
     collection = MongoClient().db.collection
@@ -38,11 +34,6 @@ def dict_repo(collection):
 def model_repo(collection):
     repo = ModelRepo(collection)
     yield repo
-
-
-def test_create_repo_with_unexpected_model_type(collection):
-    with pytest.raises(ValueError):
-        IntRepo(collection)
 
 
 def test_count(collection, dict_repo):

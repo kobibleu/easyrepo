@@ -18,46 +18,48 @@ class MongoEngineRepository(Generic[T], PagingRepository):
     """
 
     def __init__(self):
-        self._model_type = get_args(self.__orig_bases__[0])[0]
-        if not issubclass(self._model_type, Document):
-            raise ValueError(f"Model type {self._model_type} is not `mongoengine.Document`")
+        self._model = get_args(self.__orig_bases__[0])[0]
+        if type(self._model) == TypeVar:
+            raise ValueError("Missing repository type")
+        if not issubclass(self._model, Document):
+            raise ValueError(f"Model type {self._model} is not `mongoengine.Document`")
 
     def count(self) -> int:
         """
         Returns the number of documents available.
         """
-        return self._model_type.objects.count()
+        return self._model.objects.count()
 
     def delete_all(self):
         """
         Deletes all documents.
         """
-        self._model_type.drop_collection()
+        self._model.drop_collection()
 
     def delete_all_by_id(self, ids: Iterable[ObjectId]):
         """
         Deletes all documents with the given IDs.
         """
-        self._model_type.objects(id__in=ids).delete()
+        self._model.objects(id__in=ids).delete()
 
     def delete_by_id(self, id: ObjectId):
         """
         Deletes the document with the given id.
         """
-        self._model_type.objects(id=id).delete()
+        self._model.objects(id=id).delete()
 
     def exists_by_id(self, id: ObjectId) -> bool:
         """
         Returns whether a document with the given id exists.
         """
-        return bool(self._model_type.objects(id=id).count())
+        return bool(self._model.objects(id=id).count())
 
     def find_all(self, sort: Sort = None) -> List[T]:
         """
         Returns all documents sorted by the given options.
         """
         order_by = self._sort_query(sort)
-        query_set = self._model_type.objects().order_by(*order_by)
+        query_set = self._model.objects().order_by(*order_by)
         return list(query_set)
 
     def find_page(self, page_request: PageRequest, sort: Sort = None) -> Page[T]:
@@ -65,7 +67,7 @@ class MongoEngineRepository(Generic[T], PagingRepository):
         Returns a Page of document meeting the paging restriction.
         """
         order_by = self._sort_query(sort)
-        query_set = self._model_type.objects().skip(page_request.offset()).limit(page_request.size).order_by(*order_by)
+        query_set = self._model.objects().skip(page_request.offset()).limit(page_request.size).order_by(*order_by)
         result = list(query_set)
         return Page(
             content=result,
@@ -77,14 +79,14 @@ class MongoEngineRepository(Generic[T], PagingRepository):
         """
         Returns all documents with the given IDs.
         """
-        return list(self._model_type.objects(id__in=ids))
+        return list(self._model.objects(id__in=ids))
 
     def find_by_id(self, id: ObjectId) -> Optional[T]:
         """
         Returns a document by its id.
         """
         try:
-            return self._model_type.objects(id=id).get()
+            return self._model.objects(id=id).get()
         except DoesNotExist:
             return None
 
