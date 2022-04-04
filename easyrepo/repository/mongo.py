@@ -2,7 +2,7 @@ from typing import Optional, Iterable, List, Tuple, TypeVar, Generic, get_args
 
 import pymongo
 from bson import ObjectId
-from pydantic import BaseModel
+from easyrepo.model.mongo import MongoModel
 
 from easyrepo.interface.paging import PagingRepository
 from easyrepo.model.paging import Page, PageRequest
@@ -14,14 +14,16 @@ T = TypeVar("T")
 class MongoRepository(Generic[T], PagingRepository):
     """
     Mongo repository.
+
+    T: the type of object handled by the repository, can be a dict or `easyrepo.model.mongo.MongoModel`.
     """
 
     def __init__(self, collection: pymongo.collection.Collection):
         self._collection = collection
         self._model_type = get_args(self.__orig_bases__[0])[0]
-        if not issubclass(self._model_type, (BaseModel, dict)):
-            raise ValueError(f"Model type {self._model_type} is not a pydantic model or dict")
-        self._is_pydantic_model = issubclass(self._model_type, BaseModel)
+        if not issubclass(self._model_type, (MongoModel, dict)):
+            raise ValueError(f"Model type {self._model_type} is not dict or `easyrepo.model.mongo.MongoModel`")
+        self._is_pydantic_model = issubclass(self._model_type, MongoModel)
 
     def count(self) -> int:
         """
@@ -62,9 +64,7 @@ class MongoRepository(Generic[T], PagingRepository):
             "sort": self._sort_query(sort)
         }
         result = list(self._collection.find(**args))
-        if self._is_pydantic_model:
-            result = [self._model_type(id=r.pop("_id"), **r) for r in result]
-        return result
+        return [self._map_result(r) for r in result]
 
     def find_page(self, page_request: PageRequest, sort: Sort = None) -> Page[T]:
         """
@@ -77,60 +77,64 @@ class MongoRepository(Generic[T], PagingRepository):
             "limit": page_request.size
         }
         result = list(self._collection.find(**args))
-        if self._is_pydantic_model:
-            result = [self._model_type(id=r.pop("_id"), **r) for r in result]
-        return Page(content=result, page_request=page_request, total_elements=self.count())
+        return Page(
+            content=[self._map_result(r) for r in result],
+            page_request=page_request,
+            total_elements=self.count()
+        )
 
     def find_all_by_id(self, ids: Iterable[ObjectId]) -> Iterable[T]:
         """
         Returns all documents with the given IDs.
         """
         result = list(self._collection.find(filter={"_id": {"$in": ids}}))
-        if self._is_pydantic_model:
-            result = [self._model_type(id=r.pop("_id"), **r) for r in result]
-        return result
+        return [self._map_result(r) for r in result]
 
     def find_by_id(self, id: ObjectId) -> Optional[T]:
         """
         Returns a document by its id.
         """
         result = self._collection.find_one({"_id": id})
-        if self._is_pydantic_model:
-            result = self._model_type(id=result.pop("_id"), **result)
-        return result
+        return self._map_result(result)
 
     def save(self, model: T) -> T:
         """
         Saves a given document.
         """
-        if isinstance(model, BaseModel):
+        if isinstance(model, MongoModel):
             model = model.dict()
             model["_id"] = model.pop("id", None)
         elif not isinstance(model, dict):
             raise ValueError(f"type {type(model)} not handled by repository.")
 
-        if model.get("_id") is None:
-            model.pop("_id", None)
-            id = self._collection.insert_one(model).inserted_id
+        model_id = model.get("_id")
+        if model_id is None:
+            model.pop("_id", None)  # ensure there is no `_id` field in the document to not create it with None value
+            model_id = self._collection.insert_one(model).inserted_id
         else:
-            id = model["_id"]
-            self._collection.replace_one({"_id": id}, model)
-        return self.find_by_id(id)
+            self._collection.replace_one({"_id": model_id}, model)
+        return self.find_by_id(model_id)
 
     def save_all(self, models: Iterable[T]) -> Iterable[T]:
         """
         Saves all given documents.
         """
-        return [self.save(model) for model in models]
+        return [self.save(m) for m in models]
 
     @staticmethod
     def _filter_query(filter: dict = None) -> dict:
+        """
+        Build mongo filter query.
+        """
         if filter is None:
             return {}
         return {}
 
     @staticmethod
     def _sort_query(sort: Sort) -> List[Tuple[str, int]]:
+        """
+        Build mongo sort query.
+        """
         if sort is None:
             return []
         query = []
@@ -138,3 +142,11 @@ class MongoRepository(Generic[T], PagingRepository):
             direction = pymongo.ASCENDING if order.direction.is_ascending() else pymongo.DESCENDING
             query.append((order.key, direction))
         return query
+
+    def _map_result(self, result: dict) -> T:
+        """
+        Map query result into appropriate object.
+        """
+        if not self._is_pydantic_model:
+            return result
+        return self._model_type(id=result.pop("_id"), **result)

@@ -1,4 +1,5 @@
 import abc
+from typing import Any
 
 from easyrepo.interface.crud import CRUDRepository
 from easyrepo.model.paging import PageRequest, Page
@@ -11,5 +12,5 @@ class PagingRepository(CRUDRepository):
     """
 
     @abc.abstractmethod
-    def find_page(self, page_request: PageRequest, sort: Sort = None) -> Page:
+    def find_page(self, page_request: PageRequest, sort: Sort = None) -> Page[Any]:
         raise NotImplementedError()

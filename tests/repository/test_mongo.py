@@ -1,16 +1,12 @@
-from typing import Optional
-
 import pytest
 from mongomock import MongoClient
-from pydantic import BaseModel
 
-from easyrepo.model.objectid import ObjectId
+from easyrepo.model.mongo import MongoModel
 from easyrepo.model.paging import PageRequest
 from easyrepo.repository.mongo import MongoRepository
 
 
-class TestModel(BaseModel):
-    id: Optional[ObjectId]
+class TestModel(MongoModel):
     value: str
 
 

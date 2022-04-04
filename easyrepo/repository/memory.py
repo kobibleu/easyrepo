@@ -12,13 +12,15 @@ T = TypeVar("T")
 class MemoryRepository(Generic[T], PagingRepository):
     """
     Memory repository.
+
+    T: the type of object handled by the repository, can be a dict or `pydantic.BaseModel`.
     """
 
     def __init__(self):
         self._data = {}
         model_type = get_args(self.__orig_bases__[0])[0]
         if not issubclass(model_type, (BaseModel, dict)):
-            raise ValueError(f"Model type {model_type} is not a pydantic model or dict")
+            raise ValueError(f"Model type {model_type} is not dict or `pydantic.BaseModel`")
 
     def count(self) -> int:
         """
