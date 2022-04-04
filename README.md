@@ -11,7 +11,7 @@ repository provided.
   ```python
   from easyrepo import CRUDRepository
   
-  class MyRepo(CRUDRepository[dict, int]):
+  class MyRepo(CRUDRepository):
     # ... implement abstract methods
   ```  
   
@@ -20,7 +20,7 @@ repository provided.
   ```python
   from easyrepo import PagingRepository
   
-  class MyRepo(PagingRepository[dict, int]):
+  class MyRepo(PagingRepository):
     # ... implement abstract methods
   ```
 
@@ -29,7 +29,7 @@ repository provided.
 - `MemoryRepository`: simplest usage of repository implementing `PagingRepository`, suited for rapid bootstrapping and prototyping.
 
   ```python
-  from easyrepo import MemoryRepository
+  from easyrepo.repository.memory import MemoryRepository
   
   
   class MyRepo(MemoryRepository[dict]):
@@ -42,7 +42,7 @@ repository provided.
 - `MongoRepository`: mongo specific repository implementing `PagingRepository`.
 
   ```python
-  from easyrepo import MongoRepository
+  from easyrepo.repository.mongo import MongoRepository
   from pymongo import MongoClient
   
   
@@ -55,6 +55,24 @@ repository provided.
   collection = db.test_collection
   
   test_repo = MyRepo(collection=collection)
+  ```
+  
+- `MongoEngineRepository`: dedicated repository for MongoEngine ODM implementing `PagingRepository`.
+
+  ```python
+  from easyrepo.repository.mongoengine import MongoEngineRepository
+  from mongoengine import Document, StringField
+  
+  
+  class TestModel(Document):
+    value: str = StringField(required=True)
+  
+  
+  class MyRepo(MongoEngineRepository[TestModel]):
+    pass
+  
+  
+  test_repo = MyRepo()
   ```
 
 

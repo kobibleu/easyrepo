@@ -117,6 +117,11 @@ def test_find_by_id_pydantic_model_type(collection, model_repo):
     assert model_repo.find_by_id(ids[0]).value == "value 0"
 
 
+def test_save_unexpected_type(collection, model_repo):
+    with pytest.raises(ValueError):
+        model_repo.save(1)
+
+
 def test_save_dict_type(collection, dict_repo):
     res = dict_repo.save({"value": "value 0"})
     assert "_id" in res and res["value"] == "value 0"

@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 0.3.0
+
+### Added
+
+- Add `MongoEngineRepository` implementing `PagingRepository` interface.
+
 ## 0.2.2
 
 ### Added
@@ -17,7 +23,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Add `MemoryRepository` implementing `CRUDRepository` interface.
+- Add `MemoryRepository` implementing `PagingRepository` interface.
 
 ## 0.1.0
 
@@ -26,4 +32,4 @@ All notable changes to this project will be documented in this file.
 - Add `CRUDRepository` interface.
 - Add `PagingRepository` interface extending `CRUDRepository`.
 - Add `Paging` and `Sorting` model.
-- Add `MongoRepository` implementing `CRUDRepository` interface.
+- Add `MongoRepository` implementing `PagingRepository` interface.

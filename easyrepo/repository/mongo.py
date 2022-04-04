@@ -55,7 +55,7 @@ class MongoRepository(Generic[T], PagingRepository):
         """
         return bool(self._collection.count_documents({"_id": id}))
 
-    def find_all(self, sort: Sort = None) -> Iterable[T]:
+    def find_all(self, sort: Sort = None) -> List[T]:
         """
         Returns all documents sorted by the given options.
         """
@@ -83,7 +83,7 @@ class MongoRepository(Generic[T], PagingRepository):
             total_elements=self.count()
         )
 
-    def find_all_by_id(self, ids: Iterable[ObjectId]) -> Iterable[T]:
+    def find_all_by_id(self, ids: Iterable[ObjectId]) -> List[T]:
         """
         Returns all documents with the given IDs.
         """
@@ -115,7 +115,7 @@ class MongoRepository(Generic[T], PagingRepository):
             self._collection.replace_one({"_id": model_id}, model)
         return self.find_by_id(model_id)
 
-    def save_all(self, models: Iterable[T]) -> Iterable[T]:
+    def save_all(self, models: Iterable[T]) -> List[T]:
         """
         Saves all given documents.
         """

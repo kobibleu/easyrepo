@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, TypeVar, Generic, get_args
+from typing import Iterable, Optional, TypeVar, Generic, get_args, List
 
 from pydantic import BaseModel
 
@@ -53,7 +53,7 @@ class MemoryRepository(Generic[T], PagingRepository):
         """
         return self._data.get(id, None) is not None
 
-    def find_all(self, sort: Sort = None) -> Iterable[T]:
+    def find_all(self, sort: Sort = None) -> List[T]:
         """
         Returns all entities sorted by the given options.
         """
@@ -66,11 +66,11 @@ class MemoryRepository(Generic[T], PagingRepository):
         result = self.find_all(sort)[page_request.offset():page_request.offset() + page_request.size]
         return Page(content=result, page_request=page_request, total_elements=self.count())
 
-    def find_all_by_id(self, ids: Iterable[int]) -> Iterable[T]:
+    def find_all_by_id(self, ids: Iterable[int]) -> List[T]:
         """
         Returns all entities with the given IDs.
         """
-        return {k: self._data[k] for k in ids}
+        return list({k: self._data[k] for k in ids}.values())
 
     def find_by_id(self, id: int) -> Optional[T]:
         """
@@ -90,7 +90,7 @@ class MemoryRepository(Generic[T], PagingRepository):
         else:
             raise ValueError(f"type {type(model)} not handled by repository.")
 
-    def save_all(self, models: Iterable[T]) -> Iterable[T]:
+    def save_all(self, models: Iterable[T]) -> List[T]:
         """
         Saves all given entities.
         """
