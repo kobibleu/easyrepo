@@ -102,12 +102,20 @@ def test_save_unexpected_type(dict_repo):
 
 
 def test_save_dict_type_list(dict_repo):
-    res = dict_repo.save_all([{"id": 3, "name": "entity3bis"}, {"name": "entity4"}, {"name": "entity5"}])
+    res = dict_repo.save_all([
+        {"id": 3, "name": "entity3bis"},
+        {"name": "entity4"},
+        {"name": "entity5"}
+    ])
     assert len(res) == 3
     assert len(dict_repo.find_all()) == 5
-    assert dict_repo.find_by_id(3)["name"] == "entity3bis"
 
 
 def test_save_pydantic_model_type_list(model_repo):
-    res = model_repo.save_all([TestModel(name="entity1"), TestModel(name="entity2"), TestModel(name="entity3")])
+    res = model_repo.save_all([
+        TestModel(name="entity1"),
+        TestModel(name="entity2"),
+        TestModel(name="entity3")
+    ])
     assert len(res) == 3
+    assert len(model_repo.find_all()) == 3

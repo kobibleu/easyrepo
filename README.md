@@ -79,12 +79,12 @@ repository provided.
 
   ```python
   from easyrepo.repository.sql import SqlRepository
-  from easyrepo.model.sql import SqlModel
+  from easyrepo.model.sql import Entity
   from sqlalchemy import create_engine, Column, Integer, String
   from sqlalchemy.orm import sessionmaker
   
   
-  class TestModel(SqlModel):
+  class TestModel(Entity):
     id = Column(Integer, primary_key=True, index=True)
     value: str = Column(String, nullable=False)
   

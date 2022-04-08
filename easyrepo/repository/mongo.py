@@ -2,9 +2,9 @@ from typing import Optional, Iterable, List, Tuple, TypeVar, Generic, get_args
 
 import pymongo
 from bson import ObjectId
-from easyrepo.model.mongo import MongoModel
 
 from easyrepo.interface.paging import PagingRepository
+from easyrepo.model.mongo import Document
 from easyrepo.model.paging import Page, PageRequest
 from easyrepo.model.sorting import Sort
 
@@ -15,7 +15,7 @@ class MongoRepository(Generic[T], PagingRepository):
     """
     Mongo repository.
 
-    T: the type of object handled by the repository, can be a dict or `easyrepo.model.mongo.MongoModel`.
+    T: the type of object handled by the repository, can be a dict or `easyrepo.model.mongo.Document`.
     """
 
     def __init__(self, collection: pymongo.collection.Collection):
@@ -23,9 +23,9 @@ class MongoRepository(Generic[T], PagingRepository):
         self._model = get_args(self.__orig_bases__[0])[0]
         if type(self._model) == TypeVar:
             raise ValueError("Missing repository type")
-        if not issubclass(self._model, (MongoModel, dict)):
-            raise ValueError(f"Model type {self._model} is not dict or `easyrepo.model.mongo.MongoModel`")
-        self._is_pydantic_model = issubclass(self._model, MongoModel)
+        if not issubclass(self._model, (Document, dict)):
+            raise ValueError(f"Model type {self._model} is not dict or `easyrepo.model.mongo.Document`")
+        self._is_pydantic_model = issubclass(self._model, Document)
 
     def count(self) -> int:
         """
@@ -103,7 +103,7 @@ class MongoRepository(Generic[T], PagingRepository):
         """
         Saves a given document.
         """
-        if isinstance(model, MongoModel):
+        if isinstance(model, Document):
             model = model.dict()
             model["_id"] = model.pop("id", None)
         elif not isinstance(model, dict):

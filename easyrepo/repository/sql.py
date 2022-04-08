@@ -5,16 +5,16 @@ from sqlalchemy.orm import Session
 from easyrepo import PagingRepository
 from easyrepo.model.paging import PageRequest, Page
 from easyrepo.model.sorting import Sort
-from easyrepo.model.sql import SqlModel
+from easyrepo.model.sql import Entity
 
-T = TypeVar("T", bound=SqlModel)
+T = TypeVar("T", bound=Entity)
 
 
 class SqlRepository(Generic[T], PagingRepository):
     """
     SQL repository.
 
-    T: the type of object handled by the repository, must be `easyrepo.model.sql.SqlModel`.
+    T: the type of object handled by the repository, must be `easyrepo.model.sql.Entity`.
     """
 
     def __init__(self, session: Session):
@@ -22,8 +22,8 @@ class SqlRepository(Generic[T], PagingRepository):
         self._model = get_args(self.__orig_bases__[0])[0]
         if type(self._model) == TypeVar:
             raise ValueError("Missing repository type")
-        if not issubclass(self._model, SqlModel):
-            raise ValueError(f"Model type {self._model} is not `easyrepo.model.sql.PersistableModel`")
+        if not issubclass(self._model, Entity):
+            raise ValueError(f"Model type {self._model} is not `easyrepo.model.sql.Entity`")
 
     def count(self) -> int:
         """
@@ -90,13 +90,13 @@ class SqlRepository(Generic[T], PagingRepository):
         """
         Returns an entity by its id.
         """
-        return self._session.query(self._model).filter(self._model.id == id).first()
+        return self._session.query(self._model).filter(self._model.id == id).one_or_none()
 
     def save(self, model: T) -> T:
         """
         Saves a given entity.
         """
-        if not isinstance(model, SqlModel):
+        if not isinstance(model, Entity):
             raise ValueError(f"type {type(model)} not handled by repository.")
         self._session.add(model)
         self._session.commit()
@@ -107,16 +107,15 @@ class SqlRepository(Generic[T], PagingRepository):
         """
         Saves all given entities.
         """
-        if any(not isinstance(m, SqlModel) for m in models):
+        if any(not isinstance(m, Entity) for m in models):
             raise ValueError(f"one of type in the list of model is not handled by repository.")
-        self._session.bulk_save_objects(models)
+        self._session.add_all(models)
         self._session.commit()
         for m in models:
             self._session.refresh(m)
         return list(models)
 
-    @staticmethod
-    def _sort_query(sort: Sort) -> List[str]:
+    def _sort_query(self, sort: Sort) -> List[str]:
         """
         Build sqlalchemy sort query.
         """
@@ -124,6 +123,7 @@ class SqlRepository(Generic[T], PagingRepository):
             return []
         query = []
         for order in sort.orders:
-            direction = "asc" if order.direction.is_ascending() else "desc"
-            query.append(f"{order.key} {direction}")
+            attr = getattr(self._model, order.key)
+            order_by = attr.asc() if order.direction.is_ascending() else attr.desc()
+            query.append(order_by)
         return query

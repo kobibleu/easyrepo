@@ -1,12 +1,13 @@
 import pytest
 from mongomock import MongoClient
 
-from easyrepo.model.mongo import MongoModel
+from easyrepo.model.mongo import Document
 from easyrepo.model.paging import PageRequest
+from easyrepo.model.sorting import Sort, Direction
 from easyrepo.repository.mongo import MongoRepository
 
 
-class TestModel(MongoModel):
+class TestModel(Document):
     value: str
 
 
@@ -68,10 +69,16 @@ def test_find_all_dict_type(collection, dict_repo):
     _insert_documents(collection, 3)
     assert len(dict_repo.find_all()) == 3
 
+    res = dict_repo.find_all(sort=Sort.by("value", direction=Direction.DES))
+    assert [r["value"] for r in res] == ["value 2", "value 1", "value 0"]
+
 
 def test_find_all_pydantic_model_type(collection, model_repo):
     _insert_documents(collection, 3)
     assert len(model_repo.find_all()) == 3
+
+    res = model_repo.find_all(sort=Sort.by("value", direction=Direction.DES))
+    assert [r.value for r in res] == ["value 2", "value 1", "value 0"]
 
 
 def test_find_page_dict_type(collection, dict_repo):
@@ -129,6 +136,28 @@ def test_save_pydantic_model_type(collection, model_repo):
     res.value = "value 1"
     res = model_repo.save(res)
     assert res.value == "value 1"
+
+
+def test_save_dict_type_list(collection, dict_repo):
+    ids = _insert_documents(collection, 3)
+    res = dict_repo.save_all([
+        {"_id": ids[2], "value": "value 2bis"},
+        {"value": "value 3"},
+        {"value": "value 4"}
+    ])
+    assert len(res) == 3
+    assert len(dict_repo.find_all()) == 5
+
+
+def test_save_pydantic_model_type_list(collection, model_repo):
+    ids = _insert_documents(collection, 3)
+    res = model_repo.save_all([
+        TestModel(id=ids[2], value="value 2bis"),
+        TestModel(value="value 3"),
+        TestModel(value="value 4")
+    ])
+    assert len(res) == 3
+    assert len(model_repo.find_all()) == 5
 
 
 def _insert_documents(collection, size):

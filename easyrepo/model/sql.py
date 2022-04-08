@@ -3,7 +3,7 @@ from sqlalchemy.orm import declared_attr
 
 
 @as_declarative()
-class SqlModel:
+class Entity:
     id: int
 
     @declared_attr

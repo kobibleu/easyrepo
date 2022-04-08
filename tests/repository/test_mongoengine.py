@@ -105,13 +105,13 @@ def test_save(repo):
 
 
 def test_save_all(repo):
-    model1 = TestModel(value="value 0")
-    model2 = TestModel(value="value 1")
-    model3 = TestModel(value="value 2")
-    models = repo.save_all([model1, model2, model3])
-    assert models[0].id is not None
-    assert models[1].id is not None
-    assert models[2].id is not None
+    res = repo.save_all([
+        TestModel(value="value 0"),
+        TestModel(value="value 1"),
+        TestModel(value="value 2")
+    ])
+    assert len(res) == 3
+    assert len(repo.find_all()) == 3
 
 
 def _insert_documents(size):

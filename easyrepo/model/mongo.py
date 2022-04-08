@@ -17,5 +17,5 @@ class ObjectId(bson.ObjectId):
         return bson.ObjectId(v)
 
 
-class MongoModel(BaseModel):
+class Document(BaseModel):
     id: Optional[ObjectId]
